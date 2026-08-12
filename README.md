@@ -1,216 +1,178 @@
-# Railway Digital Twin Safety Verifier
+# RailwayTwin — Digital Twin for Railway Simulation & Safety Verification
 
-> **Status: 🔵 Completed / Portfolio Maintained**
+> **Status**: 🔵 Completed / Portfolio Maintained  
+> **Target Identity**: RailwayTwin  
+> **License**: MIT License ([LICENSE](LICENSE))  
 
-A Python-based railway simulation and analytics project that combines a **digital-twin representation of railway operations**, data-driven intelligence, network analysis, simulation, and safety-oriented verification.
+RailwayTwin is a digital twin simulation, analytics, and deterministic safety verification engine designed to model railway network topology, train schedules, track occupancy, and signal/gate states to prevent operational conflicts.
 
-The project was built to explore a practical question:
+---
 
-> **Can a railway operating state be simulated, inspected, and checked for unsafe conditions before an operational decision is accepted?**
+## Overview
 
-This repository is a research/engineering project and is **not a production railway control system**.
+Modern railway management requires validating operational decisions before issuing signal updates or dispatching trains. **RailwayTwin** explores a core safety question: **Can a digital twin simulate, inspect, and deterministically check railway operational states before a physical dispatch decision is executed?**
 
-## What It Demonstrates
+The platform decouples predictive machine learning (ETA prediction, delay modeling) from deterministic safety verification (track collision detection, signal state rules, gate interlocks). Operational actions must pass pre-execution safety verification regardless of ML predictions.
 
-- Digital-twin style modelling of railway entities and operational state
-- Railway schedule and event data processing
-- Platform occupancy and tracking logic
-- Railway network construction and analysis
-- Simulation of operational scenarios
-- Data-driven analytics and intelligent processing
-- Safety-oriented rule/verification logic
-- Interactive Streamlit visualization
-- Dataset transformation and performance optimization
+---
 
-## System Overview
+## Why I Built It
 
-```text
-Railway Data
-     │
-     ▼
-Data Ingestion & Transformation
-     │
-     ▼
-┌──────────────────────────────┐
-│ Railway Digital Twin         │
-│ trains / stations / routes   │
-│ schedules / platform state   │
-└──────────────┬───────────────┘
-               │
-       ┌───────┴────────┐
-       ▼                ▼
- Network Analysis    Intelligence
-       │                │
-       └───────┬────────┘
-               ▼
-          Simulation
-               │
-               ▼
-      Safety Verification
-               │
-       ┌───────┴────────┐
-       ▼                ▼
-    Allowed          Conflict /
-    State            Unsafe State
-               │
-               ▼
-        Streamlit Dashboard
+I built RailwayTwin to explore safety-critical systems engineering, digital twin modeling, network graph analysis, and data engineering. Handling large Indian Railways schedule datasets required optimizing data pipelines (reducing schedule file footprint from 80 MB JSON to 32 MB CSV) while enforcing zero-collision safety rules across track segments and platform allocations.
+
+---
+
+## Architecture & Data Flow
+
+```mermaid
+flowchart TD
+    Data[Raw Railway Data / Schedules] --> Transformer[Data Ingestion & Transformer]
+    Transformer --> Twin[Digital Twin State Manager]
+    
+    subgraph Digital Twin Core
+        Twin --> TrackManager[Track & Signal Controllers]
+        Twin --> PlatformTracker[Platform Occupancy Tracker]
+        Twin --> NetworkGraph[NetworkX Topology Builder]
+    end
+
+    subgraph Intelligence & Safety Verification
+        Twin --> ETAPredictor[ML ETA & Analytics Predictor]
+        Twin --> SafetyVerifier[Safety Verifier & Rule Engine]
+        SafetyVerifier --> ConflictDetector[Conflict Detector]
+    end
+
+    subgraph Output & Visualization
+        ConflictDetector -- Safe --> Exec[State Synchronized]
+        ConflictDetector -- Conflict --> Alert[Critical Safety Alert]
+        SafetyVerifier --> Dashboard[Streamlit Interactive Dashboard]
+    end
 ```
 
-## Main Components
+For detailed architectural notes, see [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) and [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
 
-| Component | Purpose |
+---
+
+## Key Features & Systems Design
+
+- **Digital Twin State Synchronization**: Manages live twin state (`TwinState`) tracking active trains, speeds, track occupancy, signal aspects, and level crossing gate states.
+- **Deterministic Safety Verification**: `SafetyVerifier` evaluates track allocation rules, signal interlocks, and gate opening parameters prior to state commitment.
+- **Conflict Detection Engine**: `ConflictDetector` performs spatial and temporal checks to identify overlapping track allocations and route conflicts.
+- **Network Topology Builder**: Constructs NetworkX graph representations (`NetworkBuilder`) from station coordinates and route distances for graph analytics.
+- **ML Analytics & ETA Prediction**: Integrates `scikit-learn` regression models for train arrival time estimation and schedule delay analysis.
+- **Data Pipeline Optimization**: Converted legacy 80 MB schedule JSON files into a 32 MB binary/CSV format, significantly speeding up dataset loading times.
+- **Interactive Dashboard**: Streamlit interface (`dashboard/app.py`) providing geospatial network maps, station inspection, and event timelines.
+
+---
+
+## Technical Stack
+
+| Domain | Technologies |
 |---|---|
-| `src/digital_twin/` | Digital-twin domain/state modelling |
-| `src/railway/` | Railway-specific logic and operational rules |
-| `src/simulation/` | Scenario and operational simulation |
-| `src/network/` | Railway network construction and analysis |
-| `src/intelligence/` | Dataset analysis and intelligent processing |
-| `src/ai/` | Predictive/intelligent components |
-| `src/logging/` | Application logging |
-| `src/utils/` | Shared utilities |
-| `dashboard/` | Streamlit interactive interface |
-| `data/` | Sample and processed railway datasets |
-| `config/` | Configuration |
-| `docs/` | Supporting technical documentation |
+| **Core & Twin Model** | Python 3.10+, `numpy`, `pandas`, `polars` |
+| **Network & Graph Analysis** | `networkx` |
+| **Machine Learning** | `scikit-learn` |
+| **Visualization & Dashboard** | Streamlit, Plotly, Matplotlib |
+| **Testing & Verification** | Python standard `unittest`, `pytest` |
 
-## Dashboard
+---
 
-The Streamlit dashboard provides an interactive way to inspect railway data and simulation state.
+## Repository Structure
 
-### Current capabilities
+```
+digital_twin_railway_safety_verifier/
+├── config/
+│   ├── safety_rules.py        # Deterministic safety rules & validation functions
+│   ├── settings.py            # Global application settings
+│   └── station_config.py      # Station layout metadata
+├── dashboard/
+│   ├── app.py                 # Main Streamlit dashboard application
+│   └── components/            # Visual map & simulation UI components
+├── data/
+│   ├── sample_indian_railways.csv
+│   └── sample_network_topology.json
+├── docs/
+│   ├── development_log.md     # Development history
+│   ├── OPTIMIZATION_GUIDE.md  # Data engineering & optimization benchmarks
+│   ├── PROJECT_REPORT.md      # Comprehensive technical report
+│   ├── PROJECT_SUMMARY.md     # Project summary
+│   ├── QUICKSTART.md          # Additional setup guide
+│   └── USER_GUIDE.md          # User operational guide
+├── src/
+│   ├── ai/                    # ML model trainers & ETA predictor
+│   ├── digital_twin/          # Core twin state, verifier, & conflict detector
+│   ├── intelligence/          # Data transformers & dataset analyzers
+│   ├── logging/               # Event logger
+│   ├── network/               # NetworkX topology builder
+│   ├── railway/               # Track, signal, platform, & gate controllers
+│   ├── simulation/            # Train movement & operational simulator
+│   └── utils/                 # Occupancy calculators & categorizers
+├── tests/
+│   └── test_digital_twin.py   # Automated unit test suite (5 core tests)
+├── convert_schedules_to_csv.py# Data transformation script
+├── LICENSE                    # MIT License
+└── requirements.txt           # Dependency requirements
+```
 
-- Upload railway datasets in supported formats
-- Automatic dataset/column inspection
-- Railway network visualization
-- Station and route analysis
-- Schedule and operational analytics
-- Platform occupancy inspection
-- Time-based exploration of train events
-- Data-quality metrics
-- Interactive charts and visualizations
+---
 
-## Data Engineering & Performance Work
+## Installation & Setup
 
-One part of the project focused on handling a large schedule dataset efficiently.
+### Prerequisites
+- Python 3.10+
 
-An original JSON schedule dataset was transformed into a more efficient CSV representation using `convert_schedules_to_csv.py`.
-
-The repository documentation records an approximately **80 MB → 32 MB** reduction for the processed dataset and substantially faster loading compared with the original JSON workflow.
-
-The project also uses caching and delayed data loading in the dashboard to avoid unnecessarily loading large datasets during startup.
-
-## Technology Stack
-
-- **Python**
-- **Streamlit**
-- **Pandas / NumPy**
-- **Plotly / Matplotlib**
-- **NetworkX**
-- **scikit-learn**
-
-## Quick Start
-
-### 1. Clone
+### Setup Virtual Environment
 
 ```bash
+# Clone repository
 git clone https://github.com/Balu-Annapureddy/digital_twin_railway_safety_verifier.git
 cd digital_twin_railway_safety_verifier
-```
 
-### 2. Create an environment
-
-```bash
+# Create virtual environment
 python -m venv .venv
-```
 
-Windows:
+# Activate virtual environment
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Linux/macOS:
+# source .venv/bin/activate
 
-```bash
-.venv\Scripts\activate
-```
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 4. Run the dashboard
+---
+
+## Usage
+
+Launch the interactive Streamlit dashboard:
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-The dashboard normally opens at `http://localhost:8501`.
-
-## Project Structure
-
-```text
-.
-├── dashboard/
-├── config/
-├── data/
-├── docs/
-├── scenarios/
-├── src/
-│   ├── ai/
-│   ├── digital_twin/
-│   ├── intelligence/
-│   ├── logging/
-│   ├── network/
-│   ├── railway/
-│   ├── simulation/
-│   └── utils/
-├── convert_schedules_to_csv.py
-├── requirements.txt
-└── README.md
-```
-
-## Documentation
-
-- [`QUICKSTART.md`](QUICKSTART.md) — additional setup and usage notes
-- [`OPTIMIZATION_GUIDE.md`](OPTIMIZATION_GUIDE.md) — data/performance notes
-- [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md) — project history and implementation summary
-- [`docs/`](docs/) — technical documentation
-
-## Engineering Notes
-
-This project intentionally separates the **simulation/digital-twin layer** from the **visualization layer**. The dashboard is an interface over the underlying processing and simulation components rather than the core of the project.
-
-The project also explores the distinction between:
-
-- predictive/data-driven intelligence, and
-- deterministic operational safety rules.
-
-That separation is important for safety-oriented systems because a prediction should not automatically be treated as permission to perform an operational action.
-
-## Limitations
-
-This is an academic/research prototype using datasets and simulation rather than live railway infrastructure.
-
-It should **not** be used for real railway signalling, dispatching, train control, or safety-critical operational decisions.
-
-The system does not connect to railway signalling hardware or live railway control networks.
-
-## Project Status
-
-**Completed / Portfolio Maintained**
-
-The project is no longer positioned as a continuously deployed railway platform. Its purpose in this portfolio is to demonstrate engineering work across:
-
-**simulation + digital twins + data engineering + network analysis + intelligent systems + safety verification + interactive visualization.**
-
-## License
-
-See the repository for the current licensing terms.
+The web dashboard will automatically open at `http://localhost:8501`.
 
 ---
 
-Built as an engineering project exploring how digital representations, simulation, data-driven intelligence, and deterministic verification can work together in a safety-oriented domain.
+## Testing
+
+Automated tests are located in `tests/test_digital_twin.py` (5 unit tests covering twin state synchronization, conflict detection, safety verifier, and network topology builder).
+
+Run the test suite:
+
+```bash
+.\.venv\Scripts\python.exe -m unittest discover tests
+```
+
+---
+
+## Limitations
+
+- **Prototype Scope**: Designed as an academic/engineering research prototype using synthetic and sample schedule data; not intended for real-world railway dispatching hardware.
+- **Simulation Granularity**: Train physics modeled via discrete velocity-distance steps rather than continuous multi-body mechanical simulation.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the [`LICENSE`](LICENSE) file for details.
