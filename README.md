@@ -94,8 +94,9 @@ digital_twin_railway_safety_verifier/
 
 ```bash
 # Clone repository
-git clone https://github.com/Balu-Annapureddy/digital_twin_railway_safety_verifier.git
-cd digital_twin_railway_safety_verifier
+git clone https://github.com/Balu-Annapureddy/RailwayTwin.git
+cd RailwayTwin
+
 
 # Create virtual environment
 python -m venv .venv
