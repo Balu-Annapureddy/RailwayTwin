@@ -2,7 +2,9 @@
 
 > **Status**: 🔵 Completed Prototype  
 > **Target Identity**: RailwayTwin  
+> **Build**: [![RailwayTwin CI](https://github.com/Balu-Annapureddy/RailwayTwin/actions/workflows/ci.yml/badge.svg)](https://github.com/Balu-Annapureddy/RailwayTwin/actions)  
 > **License**: MIT License ([LICENSE](LICENSE))  
+
 
 RailwayTwin is a digital twin railway simulation and safety verification platform built with **Python**, **NetworkX**, and **NumPy**, designed to detect track allocation conflicts, enforce overspeed constraints, and verify safety invariants in rail networks.
 
