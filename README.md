@@ -66,8 +66,9 @@ For supplemental optimization notes, see [`docs/OPTIMIZATION_GUIDE.md`](docs/OPT
 ## Repository Structure
 
 ```
-digital_twin_railway_safety_verifier/
+RailwayTwin/
 ├── data/
+
 │   └── processed_schedules.csv   # Optimized 32MB railway schedule dataset
 ├── docs/
 │   ├── OPTIMIZATION_GUIDE.md     # Data processing & memory optimization guide
